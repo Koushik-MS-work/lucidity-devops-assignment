@@ -1,0 +1,15 @@
+# Copy this file to terraform.tfvars and adjust as needed.
+# terraform.tfvars is gitignored so you never commit account-specific values.
+
+aws_region      = "ap-south-1"
+project_name    = "lucidity-hello-world"
+environment     = "dev"
+cluster_name    = "lucidity-hello-world-eks"
+cluster_version = "1.29"
+
+node_instance_types = ["t3.medium"]
+node_desired_size   = 2
+node_min_size       = 1
+node_max_size       = 4
+
+single_nat_gateway = true
