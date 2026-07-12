@@ -1,0 +1,99 @@
+# The Grafana sidecar (enabled in kube-prometheus-stack-values.yaml) watches for
+# ConfigMaps labeled `grafana_dashboard: "1"` in any namespace and automatically
+# imports them into Grafana. Apply this directly with:
+#
+#   kubectl apply -f monitoring/grafana-dashboard-configmap.yaml
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-world-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  hello-world-dashboard.json: |
+    {
+      "title": "Hello World Service - Overview",
+      "uid": "hello-world-overview",
+      "tags": ["hello-world", "lucidity-assignment"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "10s",
+      "time": { "from": "now-30m", "to": "now" },
+      "panels": [
+        {
+          "id": 1,
+          "title": "Request Rate (req/s)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rate(hello_world_http_requests_total[1m])) by (path)",
+              "legendFormat": "{{path}}"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Request Duration (p95, seconds)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(hello_world_http_request_duration_seconds_bucket[5m])) by (le, path))",
+              "legendFormat": "p95 {{path}}"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "title": "Non-2xx Response Rate",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(hello_world_http_requests_total{status!=\"OK\"}[5m]))",
+              "legendFormat": "errors"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "title": "Pod CPU Usage",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"hello-world.*\"}[5m])) by (pod)",
+              "legendFormat": "{{pod}}"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "title": "Pod Memory Usage (bytes)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+          "targets": [
+            {
+              "expr": "sum(container_memory_working_set_bytes{pod=~\"hello-world.*\"}) by (pod)",
+              "legendFormat": "{{pod}}"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "title": "Pod Restarts",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+          "targets": [
+            {
+              "expr": "kube_pod_container_status_restarts_total{pod=~\"hello-world.*\"}",
+              "legendFormat": "{{pod}}"
+            }
+          ]
+        }
+      ]
+    }

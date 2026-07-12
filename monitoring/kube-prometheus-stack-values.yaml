@@ -1,0 +1,46 @@
+# Values file for the prometheus-community/kube-prometheus-stack Helm chart.
+# Install with:
+#   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#   helm repo update
+#   helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+#     -n monitoring --create-namespace -f monitoring/kube-prometheus-stack-values.yaml
+#
+# This installs Prometheus, Alertmanager, Grafana, node-exporter and
+# kube-state-metrics in one shot, and monitors both the cluster and our app
+# (via the ServiceMonitor shipped in the hello-world Helm chart).
+
+grafana:
+  enabled: true
+  adminPassword: "admin123"  # CHANGE THIS for anything beyond local demo use
+  service:
+    type: ClusterIP
+  defaultDashboardsEnabled: true
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      searchNamespace: ALL
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    # Allow Prometheus to discover ServiceMonitors from any namespace,
+    # including the one where hello-world is deployed.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+
+alertmanager:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
