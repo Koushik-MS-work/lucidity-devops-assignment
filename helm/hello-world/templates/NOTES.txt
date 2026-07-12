@@ -1,0 +1,19 @@
+Hello World has been deployed! 🎉
+
+To access the service locally, run:
+
+  export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name={{ include "hello-world.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  kubectl port-forward $POD_NAME 8080:{{ .Values.service.targetPort }}
+
+Then in another terminal:
+
+  curl http://localhost:8080/
+  curl http://localhost:8080/health
+  curl http://localhost:8080/metrics
+
+{{- if .Values.loadBalancer.enabled }}
+
+A public LoadBalancer Service was also created. Fetch its address with:
+
+  kubectl get svc {{ include "hello-world.fullname" . }}-lb
+{{- end }}

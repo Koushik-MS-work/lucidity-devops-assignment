@@ -1,0 +1,57 @@
+replicaCount: 2
+
+image:
+  repository: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/lucidity-hello-world
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+# Set to true to also create a public LoadBalancer Service (costs money on AWS).
+# Leave false and use `kubectl port-forward` for the assignment/demo.
+loadBalancer:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  readiness:
+    path: /ready
+    initialDelaySeconds: 3
+    periodSeconds: 5
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+serviceMonitor:
+  # Requires the Prometheus Operator CRDs (installed by kube-prometheus-stack).
+  enabled: true
+  interval: 15s
+  path: /metrics
+  labels:
+    release: kube-prometheus-stack
+
+podAnnotations: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
